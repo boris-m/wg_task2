@@ -8,7 +8,7 @@ class player(object):
     def __init__(self):
         self.resources       = Resources()
         self.inventoryPlanes = []
-        self.inventoryGuns   = []
+        self.inventoryGuns   = {}
         self.saved_result    = False
 
     def saveResources(self):
