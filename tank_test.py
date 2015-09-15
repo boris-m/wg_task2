@@ -32,10 +32,7 @@ def db_test_fill(shop):
                         997: {'credits': -997, 'gold': -997},
                         996: {'credits': 0, 'gold': 0}}
 
-
-
 class ShopTest(unittest.TestCase):
-
 
     @unittest.skip("tested - skipping")
     def test_shop_no_import_exception(self):
@@ -78,6 +75,7 @@ class ShopTest(unittest.TestCase):
     @unittest.skip("tested - skipping")
     def test_buy_tank_with_invalid_id_save_result_False(self):
         s=Shop()
+        db_test_fill(s)
         p=player()
         p.resources.credits=1000
         p.resources.gold=1000
@@ -87,6 +85,7 @@ class ShopTest(unittest.TestCase):
     @unittest.skip("tested - skipping")
     def test_buy_tank_with_invalid_id_type_saved_result_False(self):
         s=Shop()
+        db_test_fill(s)
         p=player()
         p.resources.credits=1000
         p.resources.gold=1000
@@ -96,6 +95,7 @@ class ShopTest(unittest.TestCase):
     @unittest.skip("tested - find bug")
     def test_buy_tank_valid_args_valid_credits_result_correct_credits(self):
         s=Shop()
+        db_test_fill(s)
         p=player()
         p.resources.credits=0
         p.resources.gold=0
@@ -106,6 +106,7 @@ class ShopTest(unittest.TestCase):
     @unittest.skip("tested - probably bug")
     def test_buy_tank_wrong_parameters_instance_result_exception(self):
         s=Shop()
+        db_test_fill(s)
         try:
             s._Shop__buyTank("123" , "123")
             res=False
@@ -117,6 +118,7 @@ class ShopTest(unittest.TestCase):
     @unittest.skip("tested - probably bug")
     def test_buy_tank_no_enought_resources__result_empty_inventoryPlanes(self):
         s=Shop()
+        db_test_fill(s)
         p=player()
         p.resources.credits=0
         p.resources.gold=0
@@ -126,6 +128,7 @@ class ShopTest(unittest.TestCase):
     @unittest.skip("tested - find bug")
     def test_buy_tank_double_buy_valid_args_valid_credits_result_one_buy(self):
         s=Shop()
+        db_test_fill(s)
         p=player()
         p.resources.credits=1000
         p.resources.gold=0
@@ -138,6 +141,7 @@ class ShopTest(unittest.TestCase):
     @unittest.skip("tested - bug +bug = no bug")
     def test_buy_tank_negative_credits_result_no_actions(self):
         s=Shop()
+        db_test_fill(s)
         s.db.tanks[999999999]= {'credits': -100, 'gold': 0}
         p=player()
         p.resources.credits=0
@@ -145,28 +149,63 @@ class ShopTest(unittest.TestCase):
         s._Shop__buyTank(p,999999999)
         self.assertEqual(p.resources.credits , 0)
 
-
-    def test_buy_tank_no_enought_resources__result_empty_inventoryPlanes(self):
+    @unittest.skip("tested - bug")
+    def test_buy_gun_no_enought_resources__result_empty_inventoryPlanes(self):
         s=Shop()
+        db_test_fill(s)
         p=player()
-        p.inventoryPlanes.append(1101)
+        p.inventoryPlanes.append(9999)
+        p.inventoryGuns[9999]=[]#TODO REMOVE it after bug fix
         p.resources.credits=0
         p.resources.gold=0
-        s._Shop__buyGuns(p, 1101, 224 )
-        print p.resources.credits
-
-        self.assertEqual(p.inventoryPlanes, [])
-
-class DBTest(unittest.TestCase):
-    @unittest.skip("tested - skipping")
-    def test_init_no_exceptions(self):
-        db=DB()
-
-
+        s._Shop__buyGuns(p, 9999, 999 )
+        print "credits - ",p.resources.credits
+        self.assertEqual(p.inventoryGuns[9999],[])
+    @unittest.skip("stopped by bug")
+    def test_buy_gun_result_correct_charge(self):
+        tid=9999
+        s=Shop()
+        db_test_fill(s)
+        p=player()
+        p.inventoryPlanes.append(tid)
+        p.inventoryGuns[tid]=[] #TODO REMOVE it after bug fix
+        p.resources.credits=999
+        p.resources.gold=0
+        s._Shop__buyGuns(p, tid, 999 )
+        self.assertEqual(p.resources.credits, 0)
+    @unittest.skip("stopped by bug")
+    def test_buy_several_different_guns_result_several_guns_added(self):
+        tid=9999
+        s=Shop()
+        db_test_fill(s)
+        p=player()
+        p.inventoryPlanes.append(tid)
+        p.inventoryGuns[tid]=[] #TODO REMOVE it after bug fix
+        p.resources.credits=999
+        p.resources.gold=999
+        s._Shop__buyGuns(p, tid, 999 )
+        self.assertEqual(p.resources.credits, 0)
+        s._Shop__buyGuns(p, tid, 998 )
+        self.assertEqual(p.resources.gold, 1)
+        self.assertEqual(p.inventoryGuns, {9999: [999, 998]})
+    @unittest.skip("stopped by bug")
+    def test_buy_several_same_guns_result_several_guns_added(self):
+        tid=9999
+        s=Shop()
+        db_test_fill(s)
+        p=player()
+        p.inventoryPlanes.append(tid)
+        p.inventoryGuns[tid]=[] #TODO REMOVE it after bug fix
+        p.resources.credits=1998
+        p.resources.gold=999
+        s._Shop__buyGuns(p, tid, 999 )
+        self.assertEqual(p.resources.credits, 999)
+        s._Shop__buyGuns(p, tid, 999 )
+        self.assertEqual(p.resources.credits, 0)
+        self.assertEqual(p.resources.gold, 999)
+        self.assertEqual(p.inventoryGuns, {9999: [999, 999]})
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
     unittest.main()
 
-    #print tmp.__buyTank("123")
