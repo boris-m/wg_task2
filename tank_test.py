@@ -15,14 +15,17 @@ class ShopTest(unittest.TestCase):
         except:
             self.assertFalse(True)
 
-    @unittest.skip("tested - skipping")
+    unittest.skip("tested - skipping")
     def test_buy_tank_valid_args_valid_credits_saved_result_True(self):
         s=Shop()
+        s.db.tanks[1101] = {'credits': 500, 'gold': 0}
         p=player()
-        p.resources.credits=1000
-        p.resources.gold=1000
+        p.resources.credits  =  1000
+        p.resources.gold     =  1000
         s._Shop__buyTank(p,1101)
-        self.assertTrue(p.saved_result)
+        s._Shop__buyTank(p,1101)
+        self.assertEqual(p.resources.credits, 500)
+        self.assertEqual(p.resources.gold,   1000)
 
     @unittest.skip("tested - skipping")
     def test_buy_tank_with_invalid_id_save_result_False(self):
@@ -43,7 +46,7 @@ class ShopTest(unittest.TestCase):
         self.assertFalse(p.saved_result)
 
     @unittest.skip("tested - find bug")
-    def test_buy_tank_valid_args_valid_credits_correct_credits(self):
+    def test_buy_tank_valid_args_valid_credits_result_correct_credits(self):
         s=Shop()
         p=player()
         p.resources.credits=0
@@ -52,30 +55,59 @@ class ShopTest(unittest.TestCase):
         self.assertEqual(p.resources.credits , 0)
         self.assertEqual(p.resources.gold , 0)
 
-    @unittest.skip("tested - skipping")
-    def test_buy_tank_wrong_parameters_instance_exception(self):
+    @unittest.skip("tested - probably bug")
+    def test_buy_tank_wrong_parameters_instance_result_exception(self):
         s=Shop()
-        s._Shop__buyTank("123" , "123")
-        msg="Shop.__buyTank must operate with player and tankId args, no is Instance cheking"
-        raise Exception(msg)
-
-
-    @unittest.skip("tested - skipping")
-    def test_buy_tank_with_string_tankid_exception(self):
-        p=player()
-        p.resources.gold=100
-        p.resources.credits=100
         try:
-            s=Shop()
+            s._Shop__buyTank("123" , "123")
+            res=False
+        except Exception,e:
+            print e
+            res=True
+        self.assertTrue(res)
 
-            p.credits.gold=100
-            s._Shop__buyTank(p, "1101")
-            msg="Shop.__buyTank no tankID type casting, is it bug or feature? "
-            self.assertTrue(False,msg)
-        except Exception as ex:
-            print ex
-            msg="ales OK"
-            self.assertTrue(True,msg)
+    @unittest.skip("tested - probably bug")
+    def test_buy_tank_no_enought_resources__result_empty_inventoryPlanes(self):
+        s=Shop()
+        p=player()
+        p.resources.credits=0
+        p.resources.gold=0
+        s._Shop__buyTank(p , 1101)
+        self.assertEqual(p.inventoryPlanes, [])
+
+    @unittest.skip("tested - find bug")
+    def test_buy_tank_double_buy_valid_args_valid_credits_result_one_buy(self):
+        s=Shop()
+        p=player()
+        p.resources.credits=1000
+        p.resources.gold=0
+        s._Shop__buyTank(p,1101)
+        self.assertEqual(p.resources.credits , 0)
+        self.assertEqual(p.resources.gold , 0)
+
+
+
+    @unittest.skip("tested - bug +bug = no bug")
+    def test_buy_tank_negative_credits_result_no_actions(self):
+        s=Shop()
+        s.db.tanks[999999999]= {'credits': -100, 'gold': 0}
+        p=player()
+        p.resources.credits=0
+        p.resources.gold=0
+        s._Shop__buyTank(p,999999999)
+        self.assertEqual(p.resources.credits , 0)
+
+
+    def test_buy_tank_no_enought_resources__result_empty_inventoryPlanes(self):
+        s=Shop()
+        p=player()
+        p.inventoryPlanes.append(1101)
+        p.resources.credits=0
+        p.resources.gold=0
+        s._Shop__buyGuns(p, 1101, 224 )
+        print p.resources.credits
+
+        self.assertEqual(p.inventoryPlanes, [])
 
 class DBTest(unittest.TestCase):
     @unittest.skip("tested - skipping")

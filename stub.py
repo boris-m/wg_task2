@@ -6,9 +6,10 @@ class Resources(object):
 
 class player(object):
     def __init__(self):
-        self.resources=Resources()
-        self.inventoryPlanes=[]
-        self.saved_result=False
+        self.resources       = Resources()
+        self.inventoryPlanes = []
+        self.inventoryGuns   = []
+        self.saved_result    = False
 
     def saveResources(self):
         print "resources saved"
